@@ -9,9 +9,9 @@ This process is a bit clunky and you may need to run the script a couple times, 
 
 ## How to Use
 
- 1. Log into cloudup.com in a browser
- 1. Make sure you're on the https://cloudup.com/dashboard page
- 1. Open the browser console, paste in the entire contents of the `cloudup-bulk-delete.js` file and hit <Enter>
+ 1. Log into cloudup.com in a browser.
+ 1. Make sure you're on the https://cloudup.com/dashboard page.
+ 1. Open the browser console, paste in the entire contents of the `cloudup-bulk-delete.js` file and hit `Enter`.
  1. Leave browser tab open and let it run. Updates will be logged to the console.
  
 If the script fails at any point, reload the browser tab and repeat steps 2-4 until all items have been deleted.
