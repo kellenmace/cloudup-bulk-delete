@@ -10,25 +10,29 @@
  * If the script fails at any point, repeat steps 2-4 until all items
  * have been deleted.
  */
-(async function() {
-    let totalItems   = 0
-    let totalDeleted = 0
-    let currentItem  = null
+(function() {
+    let totalItems      = 0
+    let totalDeleted    = 0
+    let currentItem     = null
+    let collectionsList = null
 
-    console.log('🚀 Kicking off the Cloudup bulk delete script.')
+    const printKickoffMessages = () => {
+        totalItems = parseInt( collectionsList.getAttribute('count') )
 
-    const collectionsList = document.querySelector('.collections-list')
-
-    if (collectionsList) {
-        totalItems = collectionsList.getAttribute('count')
+        console.log('🚀 Kicking off the Cloudup bulk delete script.')
         console.log(`👀 Looks like you have ${totalItems} items to be deleted.`)
-        console.log('🏎 Let\'s roll!')
-    } else {
-        console.log('🤷‍ Unable to find the list of items. Please make sure you\'re logged in and on the https://cloudup.com/dashboard page.')
-        return
+        totalItems > 0 && console.log('🏎 Let\'s roll!')
     }
 
-    const updateCurrentItem = () => currentItem = collectionsList.querySelector('.col')
+    const printKickoffErrorMessage = () =>
+        console.log('🤷‍ Unable to find the list of media items. Please make sure you\'re logged in and on the https://cloudup.com/dashboard page.')
+
+    const updateCurrentItem = () => {
+        const nextItem = collectionsList.querySelector('.col')
+
+        // Make sure the next item has an ID and is not merely a placeholder.
+        currentItem = nextItem && nextItem.id ? nextItem : null
+    }
 
     const clickElement = (id, selector, elementType, timeoutDuration) => {
         return new Promise((resolve, reject) => {
@@ -81,24 +85,37 @@
 
     const incrementTotal = () => totalDeleted++
 
-    updateCurrentItem()
+    const bulkDeleteItems = async () => {
+        collectionsList = document.querySelector('.collections-list')
 
-    while(currentItem) {
-        try {
-            await clickCloseLink()
-            await clickItemThumbnail(currentItem.id)
-            await clickDeleteLink(currentItem.id)
-            await clickDeleteConfirm(currentItem.id)
-            await clickCloseLink()
-            await scrollPage()
-            logSuccessfulDeletion(currentItem.id)
-            incrementTotal()
-        } catch(error) {
-            console.log(error)
+        if (!collectionsList) {
+            printKickoffErrorMessage()
+            return // Bail early if we have no media items.
         }
 
+        printKickoffMessages()
         updateCurrentItem()
+
+        while(currentItem) {
+            try {
+                await clickCloseLink()
+                await clickItemThumbnail(currentItem.id)
+                await clickDeleteLink(currentItem.id)
+                await clickDeleteConfirm(currentItem.id)
+                await clickCloseLink()
+                await scrollPage()
+                logSuccessfulDeletion(currentItem.id)
+                incrementTotal()
+            } catch(error) {
+                console.log(error)
+            }
+
+            updateCurrentItem()
+        }
+
+        console.log(`✅ Reached end of script. ${totalDeleted} out of ${totalItems} items were deleted.`)
+        clickCloseLink()
     }
 
-    console.log(`✅ Reached end of script. ${totalDeleted} out of ${totalItems} items were deleted.`)
+    bulkDeleteItems()
 })()
